@@ -4,21 +4,27 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    docker.build("mi-app-node:${env.BUILD_ID}")
+                    // Construir la imagen Docker
+                    def customImage = docker.build("mi-app-node:${env.BUILD_ID}")
                 }
             }
         }
         stage('Test') {
             steps {
                 script {
-                    docker.run("mi-app-node:${env.BUILD_ID}", "npm test")
+                    // Ejecutar comandos dentro del contenedor construido
+                    docker.image("mi-app-node:${env.BUILD_ID}").inside {
+                        sh 'npm test'
+                    }
                 }
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying...'
-                // Aquí irían los comandos para desplegar, por ejemplo a un servidor de pruebas
+                script {
+                    // Aquí puedes definir los pasos de despliegue, por ejemplo, subir a un registro de Docker
+                    echo 'Deploying the application...'
+                }
             }
         }
     }
