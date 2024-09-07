@@ -9,10 +9,21 @@ pipeline {
                 }
             }
         }
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    // Instalar las dependencias dentro del contenedor
+                    docker.image("mi-app-node:${env.BUILD_ID}").inside {
+                        // Confirmando que las dependencias estén instaladas
+                        sh 'npm install'
+                    }
+                }
+            }
+        }
         stage('Test') {
             steps {
                 script {
-                    // Ejecutar comandos dentro del contenedor construido
+                    // Ejecutar los tests dentro del contenedor Docker
                     docker.image("mi-app-node:${env.BUILD_ID}").inside {
                         sh 'npm test'
                     }
@@ -22,7 +33,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Aquí puedes definir los pasos de despliegue, por ejemplo, subir a un registro de Docker
                     echo 'Deploying the application...'
                 }
             }
