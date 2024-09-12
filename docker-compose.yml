@@ -1,0 +1,17 @@
+version: '3'
+services:
+  app:
+    image: "mi-app-node:latest" # Usaremos la imagen generada en Jenkins
+    container_name: mi-app-node
+    ports:
+      - "3000:3000" # Expone la app en el puerto 3000
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+    volumes:
+      - .:/usr/src/app # Esto monta el código local en el contenedor para facilitar el desarrollo
+
+networks:
+  app-network:
+    driver: bridge

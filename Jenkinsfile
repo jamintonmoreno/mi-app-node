@@ -30,10 +30,12 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+        stage('Deploy to Preproduction') {
             steps {
                 script {
-                    echo 'Deploying the application...'
+                    // Desplegar la aplicación en el entorno preproducción
+                    sh 'docker-compose down'  // Apaga cualquier instancia anterior
+                    sh 'docker-compose up -d' // Levanta el contenedor en background
                 }
             }
         }
