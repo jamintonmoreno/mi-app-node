@@ -44,6 +44,9 @@ pipeline {
         stage('Validation') {
             steps {
                 script {
+
+                    // Esperar unos segundos para asegurarse de que la aplicación esté lista
+                    sh 'sleep 10'
                     // Validar que la aplicación esté corriendo correctamente
                     sh 'curl --fail http://localhost:3000 || exit 1'  // Validación simple usando cURL
                 }
