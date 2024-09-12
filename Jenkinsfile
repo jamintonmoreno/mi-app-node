@@ -33,9 +33,19 @@ pipeline {
         stage('Deploy to Preproduction') {
             steps {
                 script {
+                    // Detener y eliminar cualquier contenedor existente con el nombre 'mi-app-node'
+                    sh 'docker rm -f mi-app-node || true'
                     // Desplegar la aplicación en el entorno preproducción
                     sh 'docker-compose down'  // Apaga cualquier instancia anterior
                     sh 'docker-compose up -d' // Levanta el contenedor en background
+                }
+            }
+        }
+        stage('Validation') {
+            steps {
+                script {
+                    // Validar que la aplicación esté corriendo correctamente
+                    sh 'curl --fail http://localhost:3000 || exit 1'  // Validación simple usando cURL
                 }
             }
         }
