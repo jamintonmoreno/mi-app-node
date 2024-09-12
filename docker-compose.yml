@@ -8,10 +8,10 @@ services:
     environment:
       - NODE_ENV=production
     networks:
-      - app-network
+      - jenkins-network
     volumes:
       - .:/usr/src/app # Esto monta el código local en el contenedor para facilitar el desarrollo
 
 networks:
-  app-network:
-    driver: bridge
+  jenkins-network:
+    external: true
