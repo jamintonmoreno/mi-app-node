@@ -12,6 +12,45 @@ services:
     volumes:
       - .:/usr/src/app # Esto monta el código local en el contenedor para facilitar el desarrollo
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"  # Exponer el puerto para acceder a la UI de Prometheus
+    networks:
+      - jenkins-network
+
+      # Para monitorizar contenedores Docker
+  docker-exporter:
+    image: prom/node-exporter:latest
+    container_name: docker-exporter
+    ports:
+      - "9323:9323"
+    networks:
+      - jenkins-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"  # Exponer puerto 3001 para Grafana
+    networks:
+      - jenkins-network
+
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"  # Exponer puerto 8080 para cAdvisor
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /sys:/sys
+      - /var/lib/docker:/var/lib/docker
+    networks:
+      - jenkins-network
+
 networks:
   jenkins-network:
     external: true
