@@ -1,10 +1,12 @@
 pipeline {
     agent any
+    environment {
+        RECIPIENT_EMAIL = 'jamintondevops@gmail.com'
+    }
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Construir la imagen Docker
                     def customImage = docker.build("mi-app-node:${env.BUILD_ID}")
                 }
             }
@@ -12,9 +14,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Instalar las dependencias dentro del contenedor
                     docker.image("mi-app-node:${env.BUILD_ID}").inside {
-                        // Confirmando que las dependencias estén instaladas
                         sh 'npm install'
                     }
                 }
@@ -23,7 +23,6 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Ejecutar los tests dentro del contenedor Docker
                     docker.image("mi-app-node:${env.BUILD_ID}").inside {
                         sh 'npm test'
                     }
@@ -33,23 +32,37 @@ pipeline {
         stage('Deploy to Preproduction') {
             steps {
                 script {
-                    // Detener y eliminar cualquier contenedor existente con el nombre 'mi-app-node'
                     sh 'docker rm -f mi-app-node || true'
-                    // Desplegar la aplicación en el entorno preproducción
-                    sh 'docker-compose down'  // Apaga cualquier instancia anterior
-                    sh 'docker-compose up -d' // Levanta el contenedor en background
+                    sh 'docker-compose down'
+                    sh 'docker-compose up -d'
                 }
             }
         }
         stage('Validation') {
             steps {
                 script {
-
-                    // Esperar unos segundos para asegurarse de que la aplicación esté lista
                     sh 'sleep 20'
-                    // Validar que la aplicación esté corriendo correctamente
-                    sh 'curl --fail http://mi-app-node:3000 || exit 1'  // Validación simple usando cURL
+                    sh 'curl --fail http://mi-app-node:3000 || exit 1'
                 }
+            }
+        }
+    }
+    post {
+        success {
+            emailext subject: "SUCCESS: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
+                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                     to: "${env.RECIPIENT_EMAIL}"
+        }
+        failure {
+            emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
+                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                     to: "${env.RECIPIENT_EMAIL}"
+        }
+        always {
+            script {
+                sh 'docker system prune -f'
             }
         }
     }

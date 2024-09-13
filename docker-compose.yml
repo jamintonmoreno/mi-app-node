@@ -43,7 +43,7 @@ services:
     image: google/cadvisor:latest
     container_name: cadvisor
     ports:
-      - "8080:8080"  # Exponer puerto 8080 para cAdvisor
+      - "8081:8080"  # Exponer puerto 8080 para cAdvisor
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /sys:/sys
