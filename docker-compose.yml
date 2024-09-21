@@ -7,10 +7,23 @@ services:
       - "3000:3000" # Expone la app en el puerto 3000
     environment:
       - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/cruddb # Añadir la URI de conexión a MongoDB
     networks:
       - jenkins-network
     volumes:
       - .:/usr/src/app # Esto monta el código local en el contenedor para facilitar el desarrollo
+    depends_on:
+      - mongo # Nos aseguramos de que la app no arranque hasta que Mongo esté disponible
+
+  mongo:
+    image: "mongo:latest"
+    container_name: mongo
+    ports:
+      - "27017:27017" # Puerto para la base de datos MongoDB
+    networks:
+      - jenkins-network
+    volumes:
+      - mongo-data:/data/db # Volumen persistente para la base de datos
 
   prometheus:
     image: prom/prometheus:latest
@@ -22,7 +35,6 @@ services:
     networks:
       - jenkins-network
 
-      # Para monitorizar contenedores Docker
   docker-exporter:
     image: prom/node-exporter:latest
     container_name: docker-exporter
@@ -54,3 +66,6 @@ services:
 networks:
   jenkins-network:
     external: true
+
+volumes:
+  mongo-data: # Volumen para MongoDB
