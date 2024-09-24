@@ -4,10 +4,16 @@ pipeline {
         RECIPIENT_EMAIL = 'jamintondevops@gmail.com'
     }
     stages {
-        stage('Build') {
+        stage('Build Backend and Frontend') {
             steps {
                 script {
-                    def customImage = docker.build("mi-app-node:${env.BUILD_ID}")
+                    // Construir el backend
+                    def backendImage = docker.build("mi-app-node:${env.BUILD_ID}", "-f Dockerfile .")
+                    // Construir el frontend
+                    dir('frontend') {
+                        sh 'npm install'
+                        sh 'npm run build'
+                    }
                 }
             }
         }
@@ -20,7 +26,7 @@ pipeline {
                 }
             }
         }
-        stage('Test') {
+        stage('Test Backend') {
             steps {
                 script {
                     docker.image("mi-app-node:${env.BUILD_ID}").inside {
