@@ -4,46 +4,52 @@ pipeline {
         RECIPIENT_EMAIL = 'jamintondevops@gmail.com'
     }
     stages {
-        stage('Build Backend and Frontend') {
+        stage('Build Backend') {
             steps {
                 script {
-                    // Construir el backend
-                    def backendImage = docker.build("mi-app-node:${env.BUILD_ID}", "-f Dockerfile .")
-                    // Construir el frontend
-                    dir('frontend') {
+                    def backendImage = docker.build("mi-app-backend:${env.BUILD_ID}", "./backend")
+                }
+            }
+        }
+        stage('Build Frontend') {
+            steps {
+                script {
+                    def frontendImage = docker.build("mi-app-frontend:${env.BUILD_ID}", "./frontend")
+                }
+            }
+        }
+        stage('Install Dependencies for Backend') {
+            steps {
+                script {
+                    docker.image("mi-app-backend:${env.BUILD_ID}").inside {
                         sh 'npm install'
-                        sh 'npm run build'
                     }
                 }
             }
         }
-        stage('Install Dependencies') {
+        stage('Install Dependencies for Frontend') {
             steps {
                 script {
-                    docker.image("mi-app-node:${env.BUILD_ID}").inside {
+                    docker.image("mi-app-frontend:${env.BUILD_ID}").inside {
                         sh 'npm install'
-                        // Verificar si los comandos existen
-                        sh 'which npm'
-                        sh 'which curl'
                     }
                 }
             }
         }
-        stage('Test Backend') {
+        stage('Run Tests for Backend') {
             steps {
                 script {
-                    docker.image("mi-app-node:${env.BUILD_ID}").inside {
+                    docker.image("mi-app-backend:${env.BUILD_ID}").inside {
                         sh 'npm test'
                     }
                 }
             }
         }
-        stage('Deploy to Preproduction') {
+        stage('Deploy Backend and Frontend') {
             steps {
                 script {
-                    sh 'docker rm -f mi-app-node || true'
                     sh 'docker-compose down'
-                    sh 'docker-compose up -d'
+                    sh 'docker-compose up -d --build'
                 }
             }
         }
@@ -51,25 +57,28 @@ pipeline {
             steps {
                 script {
                     sh 'sleep 20'
-                    sh 'curl --fail http://mi-app-node:3000 || exit 1'
+                    // Validar backend (API)
+                    sh 'curl --fail http://localhost:3000/items || exit 1'
+                    // Validar frontend (Interfaz)
+                    sh 'curl --fail http://localhost:3001 || exit 1'
                 }
             }
         }
     }
     post {
         success {
-          //  emailext subject: "SUCCESS: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-          //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
-          //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-          //           to: "${env.RECIPIENT_EMAIL}"
-          echo "Build succeeded"
+            echo 'Build and tests passed'
+            emailext subject: "SUCCESS: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
+                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                     to: "${env.RECIPIENT_EMAIL}"
         }
         failure {
-          //  emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-          //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
-          //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-          //           to: "${env.RECIPIENT_EMAIL}"
-          echo "Build failed"
+            echo 'Build failed'
+            emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
+                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+                     to: "${env.RECIPIENT_EMAIL}"
         }
         always {
             script {

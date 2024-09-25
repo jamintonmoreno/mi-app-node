@@ -1,43 +1,43 @@
 version: '3'
 services:
-  app:
-    image: "mi-app-node:latest" # Usaremos la imagen generada en Jenkins
-    container_name: mi-app-node
+  backend:
+    build: ./backend # Utiliza el Dockerfile del backend
+    container_name: backend
     ports:
-      - "3000:3000" # Expone la app en el puerto 3000
+      - "3000:3000" # Expone la API del backend en el puerto 3000
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/cruddb # Añadir la URI de conexión a MongoDB
+      - MONGO_URI=mongodb://mongo:27017/cruddb # URI de conexión a MongoDB
     networks:
-      - jenkins-network
+      - app-network
     volumes:
-      - .:/usr/src/app # Esto monta el código local en el contenedor para facilitar el desarrollo
+      - ./backend:/usr/src/app # Montar el código del backend
     depends_on:
-      - mongo # Nos aseguramos de que la app no arranque hasta que Mongo esté disponible
+      - mongo # Asegura que MongoDB esté disponible antes de iniciar el backend
 
   mongo:
-    image: "mongo:latest"
+    image: mongo:latest
     container_name: mongo
     ports:
-      - "27017:27017" # Puerto para la base de datos MongoDB
+      - "27017:27017" # Puerto para MongoDB
     networks:
-      - jenkins-network
+      - app-network
     volumes:
-      - mongo-data:/data/db # Volumen persistente para la base de datos
+      - mongo-data:/data/db # Volumen persistente para MongoDB
 
   frontend:
-    image: "node:18-alpine" # Imagen base para Next.js
+    build: ./frontend # Utiliza el Dockerfile del frontend
     container_name: frontend
-    working_dir: /usr/src/frontend
-    volumes:
-      - ./frontend:/usr/src/frontend # Montar el código del frontend
     ports:
       - "3001:3000" # Exponer el frontend en el puerto 3001
-    command: sh -c "npm install && npm run dev" # Instalar dependencias y levantar el servidor de desarrollo
+    environment:
+      - NODE_ENV=production
     networks:
-      - jenkins-network
+      - app-network
+    volumes:
+      - ./frontend:/usr/src/app # Montar el código del frontend
     depends_on:
-      - app # Esperar a que el backend esté disponible
+      - backend # Espera a que el backend esté listo
 
   prometheus:
     image: prom/prometheus:latest
@@ -45,9 +45,17 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"  # Exponer el puerto para acceder a la UI de Prometheus
+      - "9090:9090" # Puerto para Prometheus
     networks:
-      - jenkins-network
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3002:3000" # Exponer Grafana en el puerto 3002
+    networks:
+      - app-network
 
   docker-exporter:
     image: prom/node-exporter:latest
@@ -55,31 +63,23 @@ services:
     ports:
       - "9323:9323"
     networks:
-      - jenkins-network
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3002:3000"  # Exponer puerto 3001 para Grafana
-    networks:
-      - jenkins-network
+      - app-network
 
   cadvisor:
     image: google/cadvisor:latest
     container_name: cadvisor
     ports:
-      - "8081:8080"  # Exponer puerto 8080 para cAdvisor
+      - "8081:8080" # Puerto para cAdvisor
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /sys:/sys
       - /var/lib/docker:/var/lib/docker
     networks:
-      - jenkins-network
+      - app-network
 
 networks:
-  jenkins-network:
-    external: true
+  app-network:
+    driver: bridge
 
 volumes:
-  mongo-data: # Volumen para MongoDB
+  mongo-data:
