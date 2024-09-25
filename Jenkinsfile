@@ -55,16 +55,16 @@ pipeline {
     }
     post {
         success {
-            emailext subject: "SUCCESS: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
-                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-                     to: "${env.RECIPIENT_EMAIL}"
+          //  emailext subject: "SUCCESS: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+          //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
+          //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+          //           to: "${env.RECIPIENT_EMAIL}"
         }
         failure {
-            emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                     body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
-                     recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
-                     to: "${env.RECIPIENT_EMAIL}"
+          //  emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+          //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
+          //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
+          //           to: "${env.RECIPIENT_EMAIL}"
         }
         always {
             script {
