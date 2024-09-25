@@ -59,12 +59,14 @@ pipeline {
           //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} was successful.\nCheck the results at ${env.BUILD_URL}",
           //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
           //           to: "${env.RECIPIENT_EMAIL}"
+          echo "Build succeeded"
         }
         failure {
           //  emailext subject: "FAILURE: Build ${env.JOB_NAME} #${env.BUILD_NUMBER}",
           //           body: "The build ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck the details at ${env.BUILD_URL}",
           //           recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']],
           //           to: "${env.RECIPIENT_EMAIL}"
+          echo "Build failed"
         }
         always {
             script {
