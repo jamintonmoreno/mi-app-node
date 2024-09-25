@@ -22,6 +22,9 @@ pipeline {
                 script {
                     docker.image("mi-app-node:${env.BUILD_ID}").inside {
                         sh 'npm install'
+                        // Verificar si los comandos existen
+                        sh 'which npm'
+                        sh 'which curl'
                     }
                 }
             }
