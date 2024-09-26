@@ -1,23 +1,30 @@
-# Usa una imagen base ligera de Node.js
-FROM node:18-alpine
+# Etapa 1: Construcción
+FROM node:18-alpine AS builder
 
 # Establece el directorio de trabajo
-WORKDIR /usr/src/frontend
+WORKDIR /app
 
-# Copia los archivos package.json y package-lock.json al contenedor
+# Copia los archivos de configuración e instala dependencias
 COPY package*.json ./
-
-# Instala las dependencias
 RUN npm install
 
-# Copia todo el código del proyecto al contenedor
+# Copia el código fuente
 COPY . .
 
 # Construye la aplicación para producción
 RUN npm run build
 
-# Expone el puerto 3001 (en lugar del 3000)
-EXPOSE 3001
+# Etapa 2: Producción
+FROM node:18-alpine
 
-# Comando por defecto para iniciar el servidor Next.js
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Copia los archivos necesarios desde la etapa de construcción
+COPY --from=builder /app/ .
+
+# Exponemos el puerto 3000 para Next.js
+EXPOSE 3000
+
+# Comando para correr la aplicación en producción
 CMD ["npm", "start"]
