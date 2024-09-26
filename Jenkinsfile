@@ -1,7 +1,8 @@
 pipeline {
     agent any
     environment {
-        RECIPIENT_EMAIL = 'jamintondevops@gmail.com'
+        RECIPIENT_EMAIL = 'jamintondevops@gmail.com' // Correo para recibir notificaciones de Jenkins
+        GITHUB_EMAIL = 'jaminton.morenof@gmail.com'  // Correo asociado a la cuenta de GitHub (SCM)
     }
     stages {
         stage('Build Backend') {
