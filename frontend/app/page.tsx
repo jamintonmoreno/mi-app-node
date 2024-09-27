@@ -20,7 +20,7 @@ const HomePage = () => {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    axios.get<Task[]>('http://localhost:3000/items')
+    axios.get<Task[]>('http://localhost:3001/items')
       .then(response => {
         setTasks(response.data);
         setLoading(false);
@@ -40,7 +40,7 @@ const HomePage = () => {
   };
 
   const handleSave = (task: Task) => {
-    axios.post<Task>('http://localhost:3000/items', task)
+    axios.post<Task>('http://localhost:3001/items', task)
       .then(response => {
         setTasks([...tasks, response.data]);
         setCreating(false);
@@ -55,7 +55,7 @@ const HomePage = () => {
   };
 
   const handleDelete = (id: string) => {
-    axios.delete(`http://localhost:3000/items/${id}`)
+    axios.delete(`http://localhost:3001/items/${id}`)
       .then(() => {
         setTasks(tasks.filter(task => task._id !== id));
       })

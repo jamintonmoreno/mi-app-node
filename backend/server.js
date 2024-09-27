@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 
 // Crear una nueva app de Express
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Middleware para analizar JSON
 app.use(bodyParser.json());

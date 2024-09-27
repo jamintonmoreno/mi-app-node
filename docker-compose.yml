@@ -4,7 +4,7 @@ services:
     build: ./backend # Utiliza el Dockerfile del backend
     container_name: backend
     ports:
-      - "3000:3000" # Expone la API del backend en el puerto 3000
+      - "3001:3001" # Expone la API del backend en el puerto 3000
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://mongo:27017/cruddb # URI de conexión a MongoDB
@@ -29,7 +29,7 @@ services:
     build: ./frontend # Utiliza el Dockerfile del frontend
     container_name: frontend
     ports:
-      - "3001:3000" # Exponer el frontend en el puerto 3001
+      - "3000:3000" # Exponer el frontend en el puerto 3001
     environment:
       - NODE_ENV=production
     networks:
